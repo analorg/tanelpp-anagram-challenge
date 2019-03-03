@@ -2,6 +2,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #define CHUNK 65535
 #define CP_LEN 256
@@ -35,22 +36,18 @@ int main(int argc, char **argv)
     int actual[CP_LEN] = {0}, expected[CP_LEN] = {0};
     int expectedLength = 0, modifier = 0, currentLength = 0;
     int skip = 0, same = 1;
-    unsigned char *word, *wordIterator;
-    if (argc > 3) {
-        word = malloc(CHUNK);
-        wordIterator = word;
-        for (i = 2; i < argc; i++) {
-            if (wordIterator != word) {
-                (*wordIterator++) = ' ';
-            }
-            for (j = 0; argv[i][j]; j++) {
-                (*wordIterator++) = (unsigned char) argv[i][j];
-            }
+    unsigned char *word, *wordIterator, lower;
+    word = malloc(CHUNK);
+    wordIterator = word;
+    for (i = 2; i < argc; i++) {
+        if (wordIterator != word) {
+            (*wordIterator++) = ' ';
         }
-        *wordIterator = '\0';
-    } else {
-        word = (unsigned char*) argv[2];
+        for (j = 0; argv[i][j]; j++) {
+            (*wordIterator++) = (unsigned char) tolower(argv[i][j]);
+        }
     }
+    *wordIterator = '\0';
     unsigned char buf[CHUNK];
     for (i = 0; word[i]; i++) {
         expected[word[i]]++;
@@ -85,11 +82,12 @@ int main(int argc, char **argv)
                 same = 0;
             }
             current[currentLength] = buf[i];
-            if (actual[buf[i]] < modifier) {
-                actual[buf[i]] = modifier;
+            lower = (unsigned char) tolower(buf[i]);
+            if (actual[lower] < modifier) {
+                actual[lower] = modifier;
             }
-            actual[buf[i]]++;
-            if (actual[buf[i]] > expected[buf[i]] + modifier) {
+            actual[lower]++;
+            if (actual[lower] > expected[lower] + modifier) {
                 skip = 1;
             }
             currentLength++;
